@@ -12,12 +12,14 @@ contract RaffleTest is Test {
 
     Raffle raffle;
     HelperConfig helperConfig;
+
     uint256 entranceFee;
     uint256 interval;
     address vrfCoordinator;
     bytes32 keyHash;
     uint64 subscriptionId;
     uint32 callbackGasLimit;
+    address link; 
 
     address public PLAYER = makeAddr("player");
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
@@ -31,7 +33,8 @@ contract RaffleTest is Test {
             vrfCoordinator,
             keyHash,
             subscriptionId,
-            callbackGasLimit
+            callbackGasLimit,
+            link
         ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
@@ -82,4 +85,36 @@ contract RaffleTest is Test {
       vm.prank(PLAYER);
       raffle.enterRaffle{value: entranceFee}();
     }
+
+
+    ///////////////////////////////
+    // checkUpkeep               //
+    ///////////////////////////////
+    function testCheckUpkeepReturnsFalseIfItHasNoBalance() public {
+      // Arrange
+      vm.warp(block.timestamp + interval + 1);
+      vm.roll(block.number + 1);
+      // vm.prank(PLAYER);
+      // raffle.enterRaffle{value: entranceFee}();
+
+      // Act
+      (bool upkeepNeeded, ) = raffle.checkUpkeep("");
+      // Assert
+      // vm.expectRevert(Raffle.Raffle__UpkeepNotNeeded.selector);
+      // raffle.performUpkeep("");
+      assert(!upkeepNeeded);
+    }
+
+    function testCheckUpkeepReturnsFalseIfRaffleNotOpen() public{
+      // Arange
+      vm.prank(PLAYER);
+      raffle.enterRaffle{value: entranceFee}();
+      vm.warp(block.timestamp + interval + 1);
+      vm.roll(block.number + 1);
+      raffle.performUpkeep("");
+      // Act
+      (bool upkeepNeeded, ) = raffle.checkUpkeep("");
+      assert(upkeepNeeded == false);
+    }
+
 }
