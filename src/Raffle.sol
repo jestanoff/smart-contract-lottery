@@ -31,6 +31,7 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Events  */
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     /** State Variables */
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
@@ -113,13 +114,14 @@ contract Raffle is VRFConsumerBaseV2 {
         // Effects
         s_raffleState = RaffleState.CALCULATING;
         // Chainlink VRF
-        i_vrfCoordinator.requestRandomWords(
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_keyHash,
             i_subscriptionId, // 9785
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit,
             NUM_WORDS
         );
+        emit RequestedRaffleWinner(requestId); 
     }
 
     function fulfillRandomWords(
