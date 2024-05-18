@@ -38,7 +38,7 @@ contract Raffle is VRFConsumerBaseV2 {
     uint32 private constant NUM_WORDS = 1;
 
     uint256 private immutable i_entranceFee;
-    // @dev Duration of the lottert in seconds
+    // @dev Duration of the lottery in seconds
     uint256 private immutable i_interval;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     address payable[] private s_players;
@@ -154,5 +154,17 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 index) external view returns (address) {
       return s_players[index];
+    }
+
+    function getRecentWinner() external view returns (address) {
+      return s_recentWinner;
+    }
+
+    function getLengthOfPlayers() external view returns (uint256) {
+      return s_players.length;
+    }
+
+    function getLastTimestamp() external view returns (uint256) {
+      return s_lastTimestamp;
     }
 }
