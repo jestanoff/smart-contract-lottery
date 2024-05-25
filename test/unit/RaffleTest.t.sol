@@ -44,7 +44,8 @@ contract RaffleTest is Test {
             keyHash,
             subscriptionId,
             callbackGasLimit,
-            link
+            link,
+
         ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
@@ -56,11 +57,12 @@ contract RaffleTest is Test {
     //////////////////////////
     // enterRaffle          //
     //////////////////////////
-    function testRaffleRevertsWhenYouDonntPayEnought() public {
+    function testRaffleRevertsWhenYouDontPayEnought() public {
         // Arrange
         vm.prank(PLAYER);
         // Act /Assert
         vm.expectRevert(Raffle.Raffle__NotEnoughEthSent.selector);
+        // vm.expectRevert(Raffle.Raffle__NotEnoughEthSent.selector);
         raffle.enterRaffle();
     }
 
@@ -137,10 +139,9 @@ contract RaffleTest is Test {
 
     function testPerformUpkeepRevertsIfCheckUpkeepIsFalse() public {
         // Arrange
-        uint256 currentBalance = 0;
+        uint256 currentBalance = address(raffle).balance;
         uint256 numPlayers = 0;
         uint256 raffleState = 0;
-
         // Act / Assert
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -174,9 +175,16 @@ contract RaffleTest is Test {
     // fulfillRandomWords  /////
     ///////////////////////////
 
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
+
     function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(
         uint256 randomRequestId
-    ) public raffleEnteredAndTimePassed {
+    ) public raffleEnteredAndTimePassed skipFork {
         // Arrange
         vm.expectRevert("nonexistent request");
         VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords(
@@ -188,6 +196,7 @@ contract RaffleTest is Test {
     function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney()
         public
         raffleEnteredAndTimePassed
+        skipFork
     {
         // Arrange
         uint256 additionalEntrants = 5;
@@ -222,7 +231,8 @@ contract RaffleTest is Test {
         assert(raffle.getLengthOfPlayers() == 0);
         assert(previousTimestamp < raffle.getLastTimestamp());
         assert(
-            raffle.getRecentWinner().balance == STARTING_USER_BALANCE + prize - entranceFee
+            raffle.getRecentWinner().balance ==
+                STARTING_USER_BALANCE + prize - entranceFee
         );
     }
 }
