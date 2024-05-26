@@ -121,13 +121,15 @@ contract Raffle is VRFConsumerBaseV2 {
             i_callbackGasLimit,
             NUM_WORDS
         );
-        emit RequestedRaffleWinner(requestId); 
+        emit RequestedRaffleWinner(requestId);
     }
 
+    // CEI pattern: Checks, Effects, Interactions
     function fulfillRandomWords(
         uint256 /* requestId */,
         uint256[] memory randomWords
     ) internal override {
+        // Checks
         // Effects
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
@@ -149,22 +151,22 @@ contract Raffle is VRFConsumerBaseV2 {
     }
 
     function getRaffleState() external view returns (RaffleState) {
-      return s_raffleState;
+        return s_raffleState;
     }
 
     function getPlayer(uint256 index) external view returns (address) {
-      return s_players[index];
+        return s_players[index];
     }
 
     function getRecentWinner() external view returns (address) {
-      return s_recentWinner;
+        return s_recentWinner;
     }
 
     function getLengthOfPlayers() external view returns (uint256) {
-      return s_players.length;
+        return s_players.length;
     }
 
     function getLastTimestamp() external view returns (uint256) {
-      return s_lastTimestamp;
+        return s_lastTimestamp;
     }
 }
